@@ -1,0 +1,11 @@
+# General
+.DS_Store
+
+# Node/Logs/OS noise (optional examples)
+*.log
+
+# Local ephemeral files for this repo
+.tmp/
+
+# Kubernetes local artifacts (optional examples)
+*.kubeconfig
