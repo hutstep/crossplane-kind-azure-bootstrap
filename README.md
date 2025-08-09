@@ -2,33 +2,33 @@
 
 [![lint](https://github.com/hutstep/crossplane-kind-azure-bootstrap/actions/workflows/lint.yml/badge.svg)](https://github.com/hutstep/crossplane-kind-azure-bootstrap/actions/workflows/lint.yml) [![e2e-kind](https://github.com/hutstep/crossplane-kind-azure-bootstrap/actions/workflows/e2e.yml/badge.svg)](https://github.com/hutstep/crossplane-kind-azure-bootstrap/actions/workflows/e2e.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Bootstrap a local [kind](https://kind.sigs.k8s.io/) cluster with [Crossplane](https://crossplane.io/), the Crossplane provider family for Azure, and selected Composition Functions. Designed to be robust, idempotent, and non-interactive friendly for both local use and CI.
+🚀 Bootstrap a local [kind](https://kind.sigs.k8s.io/) cluster with [Crossplane](https://crossplane.io/), the Crossplane provider family for Azure, and selected Composition Functions. Designed to be robust, idempotent, and non-interactive friendly for both local use and CI.
 
-## Features
+## ✨ Features
 
-- Creates or reuses a kind cluster (or targets current kubectl context)
-- Installs Crossplane via Helm chart (chart version controllable)
-- Installs provider family for Azure (provider-family-azure)
-- Installs Crossplane Composition Functions:
+- 🧰 Creates or reuses a kind cluster (or targets current kubectl context)
+- 📦 Installs Crossplane via Helm chart (chart version controllable)
+- ☁️ Installs provider family for Azure (provider-family-azure)
+- 🧩 Installs Crossplane Composition Functions:
   - function-patch-and-transform
   - function-environment-configs
-- Reliable health waits with JSONPath fallback
-- Cleanup modes (keep cluster, delete cluster, and force-clean leftovers)
-- Makefile with common targets
+- ✅ Reliable health waits with JSONPath fallback
+- 🧹 Cleanup modes (keep cluster, delete cluster, and force-clean leftovers)
+- 🧰 Makefile with common targets
 
-## Prerequisites
+## ✅ Prerequisites
 
-- Docker (required by kind)
-- kind ≥ 0.20.0
-- kubectl ≥ 1.25
-- Helm ≥ 3.11
+- 🐳 Docker (required by kind)
+- 🧱 kind ≥ 0.20.0
+- ⎈ kubectl ≥ 1.25
+- ⛵ Helm ≥ 3.11
 - Network access to:
   - https://charts.crossplane.io/stable/index.yaml
   - https://xpkg.crossplane.io/
 
 Tip: Ensure all scripts in scripts/ are executable so you can run them directly (chmod +x scripts/\*).
 
-## Quick start
+## 🚦 Quick start
 
 - Non-interactive default install (creates kind cluster if missing):
   ```bash
@@ -48,7 +48,7 @@ Tip: Ensure all scripts in scripts/ are executable so you can run them directly 
     --func-envcfg-version v0.4.0
   ```
 
-## Makefile targets
+## 🧰 Makefile targets
 
 - Bootstrap (idempotent):
   ```bash
@@ -83,7 +83,7 @@ Tip: Ensure all scripts in scripts/ are executable so you can run them directly 
   make clean-delete-cluster
   ```
 
-## Script flags (most-used)
+## ⚙️ Script flags (most-used)
 
 - --yes Non-interactive assume-yes
 - --cluster-name NAME Kind cluster name (default: crossplane-kind)
@@ -101,7 +101,7 @@ Tip: Ensure all scripts in scripts/ are executable so you can run them directly 
 - --dry-run Print planned actions only
 - --verbose Shell tracing (set -x)
 
-## What gets installed
+## 📦 What gets installed
 
 - Crossplane Helm chart from charts.crossplane.io (chart version you choose)
 - Provider family Azure package:
@@ -110,7 +110,7 @@ Tip: Ensure all scripts in scripts/ are executable so you can run them directly 
   - xpkg.crossplane.io/crossplane-contrib/function-patch-and-transform:v0.9.0
   - xpkg.crossplane.io/crossplane-contrib/function-environment-configs:v0.4.0
 
-## Verify installation
+## 🔍 Verify installation
 
 ```bash
 helm list -n crossplane-system
@@ -119,7 +119,7 @@ kubectl get functions.pkg.crossplane.io -o wide
 kubectl get pods -A
 ```
 
-## Cleanup
+## 🧹 Cleanup
 
 - Keep cluster, remove providers/functions and Crossplane Helm release:
   ```bash
@@ -134,13 +134,13 @@ kubectl get pods -A
   scripts/bootstrap-crossplane-kind.sh --cleanup --delete-cluster --yes
   ```
 
-## CI notes
+## 🧪 CI notes
 
 - Ensure Docker-in-Docker or Docker is available on the runner (kind requires Docker).
 - Cache Helm repository data to speed up runs:
   - $HOME/.cache/helm
   - optionally $HOME/.config/helm/repositories.yaml
 
-## License
+## 📜 License
 
 This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.

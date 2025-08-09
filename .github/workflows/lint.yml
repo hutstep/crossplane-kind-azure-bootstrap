@@ -3,8 +3,20 @@ name: lint
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - 'docs/**'
+      - '.gitignore'
+      - '.github/ISSUE_TEMPLATE/**'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - 'docs/**'
+      - '.gitignore'
+      - '.github/ISSUE_TEMPLATE/**'
 
 jobs:
   shell-lint:

@@ -2,9 +2,21 @@ name: e2e-kind
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - 'docs/**'
+      - '.gitignore'
+      - '.github/ISSUE_TEMPLATE/**'
   pull_request:
-    branches: [main]
+    branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - 'docs/**'
+      - '.gitignore'
+      - '.github/ISSUE_TEMPLATE/**'
 
 jobs:
   kind-e2e:
