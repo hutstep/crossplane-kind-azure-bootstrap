@@ -1,38 +1,40 @@
-# Crossplane Kind Scaffold
+# crossplane-kind-azure-bootstrap
 
-This repository provides a simple scaffold to work locally with a kind (Kubernetes-in-Docker) cluster for experimenting with Crossplane and GitOps-friendly workflows.
+Bootstrap a local [kind](https://kind.sigs.k8s.io/) cluster with [Crossplane](https://crossplane.io/), the Crossplane provider family for Azure, and selected Composition Functions. Designed to be robust, idempotent, and non-interactive friendly for both local use and CI.
+
+## Features
+- Creates or reuses a kind cluster (or targets current kubectl context)
+- Installs Crossplane via Helm chart (chart version controllable)
+- Installs provider family for Azure (provider-family-azure)
+- Installs Crossplane Composition Functions:
+  - function-patch-and-transform
+  - function-environment-configs
+- Reliable health waits with JSONPath fallback
+- Cleanup modes (keep cluster, delete cluster, and force-clean leftovers)
+- Makefile with common targets
 
 ## Prerequisites
-- Docker (for kind)
-- kind v0.20+ (or latest)
-- kubectl v1.28+
-- Helm v3.12+
-- Optional: Flux CLI (if you plan to bootstrap Flux locally)
-- Optional: Crossplane CLI (cx) or rely on Helm for installation
+- Docker (required by kind)
+- kind ≥ 0.20.0
+- kubectl ≥ 1.25
+- Helm ≥ 3.11
+- Network access to:
+  - https://charts.crossplane.io/stable/index.yaml
+  - https://xpkg.crossplane.io/
 
-## Usage
-- Create local directories used by this repo:
-  - scripts/
-  - .tmp/ (ephemeral; ignored by git)
+Tip: Ensure all scripts in scripts/ are executable so you can run them directly (chmod +x scripts/*).
 
-Typical flow:
-1) Create a local kind cluster
-   - A script will be provided under scripts/ to create a cluster using a config in .tmp/ when applicable.
-2) Install Crossplane into the cluster (e.g., via Helm)
-3) Install providers and compositions as needed
-4) When done, delete the kind cluster
-
-You can place your own scripts under scripts/ and keep any generated files (e.g., kind config, kubeconfig copies) under .tmp/.
-
-Note: Ensure all scripts in scripts/ are executable so you can run them directly (chmod +x scripts/*).
-
-## Usage examples
-- Non-interactive default install:
-  ```
+## Quick start
+- Non-interactive default install (creates kind cluster if missing):
+  ```bash
   scripts/bootstrap-crossplane-kind.sh --yes
   ```
-- Recreate cluster and override versions:
+- Use existing context (no cluster creation):
+  ```bash
+  scripts/bootstrap-crossplane-kind.sh --yes --skip-cluster
   ```
+- Recreate cluster and override versions:
+  ```bash
   scripts/bootstrap-crossplane-kind.sh --yes --recreate \
     --cluster-name xp-dev --kind-node-image kindest/node:v1.29.4 \
     --crossplane-version v1.20.1 \
@@ -40,11 +42,93 @@ Note: Ensure all scripts in scripts/ are executable so you can run them directly
     --func-pat-version v0.9.0 \
     --func-envcfg-version v0.4.0
   ```
-- Use existing context without creating cluster:
+
+## Makefile targets
+- Bootstrap (idempotent):
+  ```bash
+  make bootstrap
   ```
-  scripts/bootstrap-crossplane-kind.sh --yes --skip-cluster
+- Dry-run (print planned actions):
+  ```bash
+  make dry-run
+  ```
+- Recreate cluster then bootstrap:
+  ```bash
+  make recreate
+  ```
+- Use current context (no cluster creation):
+  ```bash
+  make skip-cluster
+  ```
+- Tools check (versions, network reachability):
+  ```bash
+  make tools-check
+  ```
+- Cleanup providers/functions/Helm release (keep cluster):
+  ```bash
+  make clean
+  ```
+- Cleanup plus remove Function package CRDs (keeps cluster):
+  ```bash
+  make clean-force
+  ```
+- Cleanup and delete kind cluster:
+  ```bash
+  make clean-delete-cluster
+  ```
+
+## Script flags (most-used)
+- --yes                       Non-interactive assume-yes
+- --cluster-name NAME         Kind cluster name (default: crossplane-kind)
+- --kind-node-image IMAGE     Node image (default: kindest/node:v1.29.4 or newer)
+- --crossplane-version VER    Crossplane Helm chart version (e.g., v1.20.1)
+- --provider-azure-version V  provider-family-azure version (e.g., v1.13.0)
+- --func-pat-version V        function-patch-and-transform version (e.g., v0.9.0)
+- --func-envcfg-version V     function-environment-configs version (e.g., v0.4.0)
+- --skip-cluster              Target current kubectl context; do not create kind
+- --recreate                  Delete existing kind cluster with the same name first
+- --wait-timeout DURATION     e.g., 10m
+- --cleanup                   Remove providers/functions and Crossplane Helm release
+- --delete-cluster            With --cleanup, delete the kind cluster too
+- --force-clean               With --cleanup, also remove Function package CRDs
+- --dry-run                   Print planned actions only
+- --verbose                   Shell tracing (set -x)
+
+## What gets installed
+- Crossplane Helm chart from charts.crossplane.io (chart version you choose)
+- Provider family Azure package:
+  - xpkg.crossplane.io/crossplane-contrib/provider-family-azure:v1.13.0
+- Composition Functions:
+  - xpkg.crossplane.io/crossplane-contrib/function-patch-and-transform:v0.9.0
+  - xpkg.crossplane.io/crossplane-contrib/function-environment-configs:v0.4.0
+
+## Verify installation
+```bash
+helm list -n crossplane-system
+kubectl get providers.pkg.crossplane.io -o wide
+kubectl get functions.pkg.crossplane.io -o wide
+kubectl get pods -A
+```
+
+## Cleanup
+- Keep cluster, remove providers/functions and Crossplane Helm release:
+  ```bash
+  scripts/bootstrap-crossplane-kind.sh --cleanup
+  ```
+- If function pods linger or are recreated by FunctionRevisions, use force-clean:
+  ```bash
+  scripts/bootstrap-crossplane-kind.sh --cleanup --force-clean
+  ```
+- Delete cluster too:
+  ```bash
+  scripts/bootstrap-crossplane-kind.sh --cleanup --delete-cluster --yes
   ```
 
 ## CI notes
 - Ensure Docker-in-Docker or Docker is available on the runner (kind requires Docker).
-- Cache Helm repository data if possible to speed up runs (e.g., cache $HOME/.cache/helm and optionally $HOME/.config/helm/repositories.yaml between jobs).
+- Cache Helm repository data to speed up runs:
+  - $HOME/.cache/helm
+  - optionally $HOME/.config/helm/repositories.yaml
+
+## License
+This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.

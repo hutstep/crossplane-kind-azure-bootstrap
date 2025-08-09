@@ -6,6 +6,7 @@
 
 # Local ephemeral files for this repo
 .tmp/
+PRD.md
 
 # Kubernetes local artifacts (optional examples)
 *.kubeconfig
