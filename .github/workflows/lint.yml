@@ -2,7 +2,7 @@ name: lint
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths-ignore:
       - 'README.md'
       - 'LICENSE'
@@ -10,7 +10,7 @@ on:
       - '.gitignore'
       - '.github/ISSUE_TEMPLATE/**'
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths-ignore:
       - 'README.md'
       - 'LICENSE'
@@ -23,13 +23,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
 
       - name: Install ShellCheck and shfmt
         run: |
           sudo apt-get update
           sudo apt-get install -y shellcheck
-          curl -sSLo /usr/local/bin/shfmt https://github.com/mvdan/sh/releases/download/v3.7.0/shfmt_v3.7.0_linux_amd64
+          curl -sSLo /usr/local/bin/shfmt https://github.com/mvdan/sh/releases/download/v3.12.0/shfmt_v3.12.0_linux_amd64
           sudo chmod +x /usr/local/bin/shfmt
 
       - name: Run ShellCheck
