@@ -35,7 +35,10 @@ SCRIPT_NAME="$(basename "$0")"
 log() { echo "[INFO ] $*"; }
 warn() { echo "[WARN ] $*" 2>&1; }
 err() { echo "[ERROR] $*" 2>&1; }
-die() { err "$*"; exit 1; }
+die() {
+  err "$*"
+  exit 1
+}
 
 if [[ ${VERBOSE} == true ]]; then set -x; fi
 
@@ -50,8 +53,8 @@ wait_pkg_healthy() {
     log "[dry-run] would wait for $kind/$name to become Healthy (timeout ${timeout})"
     return 0
   fi
-  local end=$((SECONDS + ${timeout%m}*60))
-  while (( SECONDS < end )); do
+  local end=$((SECONDS + ${timeout%m} * 60))
+  while ((SECONDS < end)); do
     if kubectl get "$kind" "$name" -o jsonpath='{.status.conditions[?(@.type=="Healthy")].status}' 2>/dev/null | grep -q True; then
       return 0
     fi
@@ -121,17 +124,18 @@ confirm() {
   fi
   read -r -p "${prompt_msg} [y/N]: " ans || true
   case "${ans}" in
-    y|Y|yes|YES) return 0 ;;
+    y | Y | yes | YES) return 0 ;;
     *) return 1 ;;
   esac
 }
 
 require_cmd() {
-  local cmd="$1"; shift || true
+  local cmd="$1"
+  shift || true
   local hint="$*"
   if ! command -v "${cmd}" >/dev/null 2>&1; then
     err "Missing required tool: ${cmd}"
-    if [[ -n "${hint}" ]]; then warn "Hint: ${hint}"; fi
+    if [[ -n ${hint} ]]; then warn "Hint: ${hint}"; fi
     case "${cmd}" in
       kind)
         warn "Install kind: https://kind.sigs.k8s.io/docs/user/quick-start/"
@@ -183,25 +187,85 @@ EOF
 parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      -y|--yes) YES=true; shift ;;
-      -n|--cluster-name) CLUSTER_NAME="$2"; shift 2 ;;
-      -k|--kind-node-image) KINDEST_NODE_IMAGE="$2"; shift 2 ;;
-      --crossplane-version) CROSSPLANE_VERSION="$2"; shift 2 ;;
-      --provider-azure-version) PROVIDER_AZURE_VERSION="$2"; shift 2 ;;
-      --func-pat-version) FUNC_PAT_VERSION="$2"; shift 2 ;;
-      --func-envcfg-version) FUNC_ENVCFG_VERSION="$2"; shift 2 ;;
-      --wait-timeout) WAIT_TIMEOUT="$2"; shift 2 ;;
-      --recreate) RECREATE=true; shift ;;
-      --skip-cluster) SKIP_CLUSTER=true; shift ;;
-      --cleanup) CLEANUP=true; shift ;;
-      --delete-cluster) DELETE_CLUSTER=true; shift ;;
-      --force-clean) FORCE_CLEAN=true; shift ;;
-      -v|--verbose) VERBOSE=true; set -x; shift ;;
-      --dry-run) DRY_RUN=true; shift ;;
-      -h|--help) usage; exit 0 ;;
-      --) shift; break ;;
-      -*) err "Unknown flag: $1"; usage; exit 2 ;;
-      *) err "Unexpected arg: $1"; usage; exit 2 ;;
+      -y | --yes)
+        YES=true
+        shift
+        ;;
+      -n | --cluster-name)
+        CLUSTER_NAME="$2"
+        shift 2
+        ;;
+      -k | --kind-node-image)
+        KINDEST_NODE_IMAGE="$2"
+        shift 2
+        ;;
+      --crossplane-version)
+        CROSSPLANE_VERSION="$2"
+        shift 2
+        ;;
+      --provider-azure-version)
+        PROVIDER_AZURE_VERSION="$2"
+        shift 2
+        ;;
+      --func-pat-version)
+        FUNC_PAT_VERSION="$2"
+        shift 2
+        ;;
+      --func-envcfg-version)
+        FUNC_ENVCFG_VERSION="$2"
+        shift 2
+        ;;
+      --wait-timeout)
+        WAIT_TIMEOUT="$2"
+        shift 2
+        ;;
+      --recreate)
+        RECREATE=true
+        shift
+        ;;
+      --skip-cluster)
+        SKIP_CLUSTER=true
+        shift
+        ;;
+      --cleanup)
+        CLEANUP=true
+        shift
+        ;;
+      --delete-cluster)
+        DELETE_CLUSTER=true
+        shift
+        ;;
+      --force-clean)
+        FORCE_CLEAN=true
+        shift
+        ;;
+      -v | --verbose)
+        VERBOSE=true
+        set -x
+        shift
+        ;;
+      --dry-run)
+        DRY_RUN=true
+        shift
+        ;;
+      -h | --help)
+        usage
+        exit 0
+        ;;
+      --)
+        shift
+        break
+        ;;
+      -*)
+        err "Unknown flag: $1"
+        usage
+        exit 2
+        ;;
+      *)
+        err "Unexpected arg: $1"
+        usage
+        exit 2
+        ;;
     esac
   done
 }
@@ -210,10 +274,10 @@ parse_args() {
 # Validations
 # ------------------------------
 validate_inputs() {
-  [[ -n "${CLUSTER_NAME}" ]] || die "--cluster-name cannot be empty"
-  [[ -n "${KINDEST_NODE_IMAGE}" ]] || die "--kind-node-image cannot be empty"
-  [[ -n "${CROSSPLANE_VERSION}" ]] || die "--crossplane-version cannot be empty"
-  [[ -n "${WAIT_TIMEOUT}" ]] || die "--wait-timeout cannot be empty"
+  [[ -n ${CLUSTER_NAME} ]] || die "--cluster-name cannot be empty"
+  [[ -n ${KINDEST_NODE_IMAGE} ]] || die "--kind-node-image cannot be empty"
+  [[ -n ${CROSSPLANE_VERSION} ]] || die "--crossplane-version cannot be empty"
+  [[ -n ${WAIT_TIMEOUT} ]] || die "--wait-timeout cannot be empty"
 }
 
 check_tools() {
@@ -275,8 +339,7 @@ install_crossplane() {
 # ------------------------------
 # Providers and Functions (idempotent)
 # ------------------------------
-apply_providers_and_functions()
-{
+apply_providers_and_functions() {
   # Provider family - Azure
   log "Applying Provider family Azure ${PROVIDER_AZURE_VERSION}"
   run kubectl apply -f - <<EOF
@@ -324,9 +387,9 @@ cleanup_resources() {
   log "Deleting FunctionRevisions (clear finalizers if needed)"
   local frs
   frs=$(kubectl get functionrevisions.pkg.crossplane.io -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null || true)
-  if [[ -n "${frs}" ]]; then
+  if [[ -n ${frs} ]]; then
     while read -r fr; do
-      [[ -z "$fr" ]] && continue
+      [[ -z $fr ]] && continue
       run kubectl patch functionrevision.pkg.crossplane.io "$fr" --type=merge -p '{"metadata":{"finalizers":[]}}' || true
       run kubectl delete functionrevision.pkg.crossplane.io "$fr" --wait=false || true
     done <<<"$frs"
@@ -344,17 +407,17 @@ cleanup_resources() {
   run kubectl -n crossplane-system delete deploy -l pkg.crossplane.io/revision --ignore-not-found || true
   # Fallback: prefix-based cleanup; loop until nothing remains (max 60s)
   local end=$((SECONDS + 60))
-  while (( SECONDS < end )); do
+  while ((SECONDS < end)); do
     local dels=0
     local dlist
     dlist=$(kubectl -n crossplane-system get deploy -o name 2>/dev/null | grep -E "^deployment/(function-|provider-family-azure)" || true)
-    if [[ -n "$dlist" ]]; then
+    if [[ -n $dlist ]]; then
       run kubectl -n crossplane-system delete $dlist --ignore-not-found || true
       dels=1
     fi
     local plist
     plist=$(kubectl -n crossplane-system get pods -o name 2>/dev/null | grep -E "^pod/(function-|provider-family-azure)" || true)
-    if [[ -n "$plist" ]]; then
+    if [[ -n $plist ]]; then
       run kubectl -n crossplane-system delete $plist --ignore-not-found || true
       dels=1
     fi
@@ -406,4 +469,3 @@ main() {
 }
 
 main "$@"
-

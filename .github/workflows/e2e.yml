@@ -1,0 +1,68 @@
+name: e2e-kind
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  kind-e2e:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Helm
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/helm
+            ~/.config/helm/repositories.yaml
+          key: ${{ runner.os }}-helm-${{ hashFiles('scripts/**', 'Makefile') }}
+          restore-keys: |
+            ${{ runner.os }}-helm-
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.29.4'
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'v3.14.4'
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.10.0
+        with:
+          cluster_name: crossplane-kind
+          node_image: kindest/node:v1.29.4
+
+      - name: Tools check (sanity)
+        run: make tools-check
+
+      - name: Bootstrap (idempotent)
+        run: |
+          scripts/bootstrap-crossplane-kind.sh --yes --skip-cluster --wait-timeout 8m
+
+      - name: Verify resources
+        run: |
+          kubectl -n crossplane-system get deploy crossplane crossplane-rbac-manager
+          kubectl get providers.pkg.crossplane.io -o wide
+          kubectl get functions.pkg.crossplane.io -o wide
+
+      - name: Idempotency run
+        run: |
+          scripts/bootstrap-crossplane-kind.sh --yes --skip-cluster --wait-timeout 8m
+
+      - name: Cleanup (keep cluster)
+        if: always()
+        run: |
+          scripts/bootstrap-crossplane-kind.sh --cleanup || true
+          kubectl get providerrevisions.pkg.crossplane.io -o wide || true
+          kubectl get functionrevisions.pkg.crossplane.io -o wide || true
+          kubectl -n crossplane-system get deploy -o name || true
+          kubectl -n crossplane-system get pods -o name || true

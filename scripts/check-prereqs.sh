@@ -20,15 +20,23 @@ fi
 
 # Colors (fall back to no color if not a TTY)
 if [[ -t 1 ]]; then
-  RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[0;33m'; BLUE='\033[0;34m'; NC='\033[0m'
+  RED='\033[0;31m'
+  GREEN='\033[0;32m'
+  YELLOW='\033[0;33m'
+  BLUE='\033[0;34m'
+  NC='\033[0m'
 else
-  RED=''; GREEN=''; YELLOW=''; BLUE=''; NC=''
+  RED=''
+  GREEN=''
+  YELLOW=''
+  BLUE=''
+  NC=''
 fi
 
-info()  { printf "%b[INFO]%b %s\n"   "$BLUE"  "$NC" "$*"; }
-success(){ printf "%b[OK]%b   %s\n"   "$GREEN" "$NC" "$*"; }
-warn()  { printf "%b[WARN]%b %s\n"  "$YELLOW" "$NC" "$*"; }
-err()   { printf "%b[ERROR]%b %s\n" "$RED"   "$NC" "$*"; }
+info() { printf "%b[INFO]%b %s\n" "$BLUE" "$NC" "$*"; }
+success() { printf "%b[OK]%b   %s\n" "$GREEN" "$NC" "$*"; }
+warn() { printf "%b[WARN]%b %s\n" "$YELLOW" "$NC" "$*"; }
+err() { printf "%b[ERROR]%b %s\n" "$RED" "$NC" "$*"; }
 
 need_cmd() {
   local name="$1"
@@ -66,15 +74,15 @@ extract_kubectl_version() {
   # 1) YAML (very stable across versions)
   v=$(kubectl version --client --output=yaml 2>/dev/null | awk -F': ' '/gitVersion:/{print $2; exit}' | sed -E 's/^v?([0-9]+\.[0-9]+\.[0-9]+).*/\1/') || true
   # 2) jsonpath
-  if [[ -z "$v" ]]; then
+  if [[ -z $v ]]; then
     v=$(kubectl version --client -o jsonpath='{.clientVersion.gitVersion}' 2>/dev/null | sed -E 's/^v?([0-9]+\.[0-9]+\.[0-9]+).*$/\1/') || true
   fi
   # 3) --short format: Client Version: v1.29.4
-  if [[ -z "$v" ]]; then
+  if [[ -z $v ]]; then
     v=$(kubectl version --client --short 2>/dev/null | sed -E 's/.*v([0-9]+\.[0-9]+\.[0-9]+).*/\1/') || true
   fi
   # 4) JSON output
-  if [[ -z "$v" ]]; then
+  if [[ -z $v ]]; then
     v=$(kubectl version --client -o json 2>/dev/null | sed -nE 's/.*\"gitVersion\"\s*:\s*\"v?([0-9]+\.[0-9]+\.[0-9]+).*\".*/\1/p') || true
   fi
   printf "%s" "$v"
@@ -95,7 +103,7 @@ check_required_commands() {
       missing=1
     fi
   done
-  if (( missing )); then
+  if ((missing)); then
     err "Install the missing command(s) and re-run. Required: docker, kind, kubectl, helm"
     return 1
   fi
@@ -116,9 +124,18 @@ check_versions() {
   kubectl_v=$(extract_kubectl_version || true)
   helm_v=$(extract_helm_version || true)
 
-  if [[ -z "$kind_v" ]]; then err "Unable to determine kind version"; return 1; fi
-  if [[ -z "$kubectl_v" ]]; then err "Unable to determine kubectl version"; return 1; fi
-  if [[ -z "$helm_v" ]]; then err "Unable to determine helm version"; return 1; fi
+  if [[ -z $kind_v ]]; then
+    err "Unable to determine kind version"
+    return 1
+  fi
+  if [[ -z $kubectl_v ]]; then
+    err "Unable to determine kubectl version"
+    return 1
+  fi
+  if [[ -z $helm_v ]]; then
+    err "Unable to determine helm version"
+    return 1
+  fi
 
   local want_kind=0.20.0 want_kubectl=1.25.0 want_helm=3.11.0
 
@@ -188,7 +205,7 @@ check_network() {
       fi
     fi
   done
-  if (( any_tool == 0 )); then
+  if ((any_tool == 0)); then
     warn "Network checks skipped due to missing curl/wget."
   fi
 }
@@ -196,7 +213,7 @@ check_network() {
 is_kind_context_by_name() {
   local ctx
   ctx=$(kubectl config current-context 2>/dev/null || true)
-  [[ "$ctx" =~ ^kind- ]]
+  [[ $ctx =~ ^kind- ]]
 }
 
 is_kind_cluster_via_nodes() {
@@ -206,7 +223,7 @@ is_kind_cluster_via_nodes() {
   # - Annotations/labels include keys with 'kind.x-k8s.io'
   local nodes_json
   nodes_json=$(kubectl get nodes -o json 2>/dev/null || true)
-  [[ -z "$nodes_json" ]] && return 1
+  [[ -z $nodes_json ]] && return 1
   echo "$nodes_json" | grep -q '"kind.x-k8s.io' && return 0
   echo "$nodes_json" | grep -q '"providerID"\s*:\s*"kind://' && return 0
   echo "$nodes_json" | grep -q '"name"\s*:\s*"kind-.*control-plane"' && return 0
@@ -239,4 +256,3 @@ main() {
 }
 
 main "$@"
-
