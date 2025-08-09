@@ -2,9 +2,9 @@ name: e2e-kind
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   kind-e2e:
@@ -28,18 +28,18 @@ jobs:
       - name: Setup kubectl
         uses: azure/setup-kubectl@v4
         with:
-          version: 'v1.29.4'
+          version: 'v1.33.1'
 
       - name: Setup Helm
         uses: azure/setup-helm@v4
         with:
-          version: 'v3.14.4'
+          version: 'v3.18.4'
 
       - name: Create kind cluster
-        uses: helm/kind-action@v1.10.0
+        uses: helm/kind-action@v1.12.0
         with:
           cluster_name: crossplane-kind
-          node_image: kindest/node:v1.29.4
+          node_image: kindest/node:v1.33.1
 
       - name: Tools check (sanity)
         run: make tools-check
