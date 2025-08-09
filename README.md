@@ -22,7 +22,7 @@
 - 🧱 kind ≥ 0.20.0
 - ⎈ kubectl ≥ 1.25
 - ⛵ Helm ≥ 3.11
-- Network access to:
+- 🌐 Network access to:
   - https://charts.crossplane.io/stable/index.yaml
   - https://xpkg.crossplane.io/
 
