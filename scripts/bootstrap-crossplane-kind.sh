@@ -298,7 +298,7 @@ kind: Function
 metadata:
   name: function-patch-and-transform
 spec:
-  package: xpkg.upbound.io/crossplane-contrib/function-patch-and-transform:${FUNC_PAT_VERSION}
+  package: xpkg.crossplane.io/crossplane-contrib/function-patch-and-transform:${FUNC_PAT_VERSION}
 EOF
   log "Waiting for Function function-patch-and-transform to become Healthy (timeout ${WAIT_TIMEOUT})"
   wait_pkg_healthy function.pkg.crossplane.io function-patch-and-transform "${WAIT_TIMEOUT}"
@@ -310,7 +310,7 @@ kind: Function
 metadata:
   name: function-environment-configs
 spec:
-  package: xpkg.upbound.io/crossplane-contrib/function-environment-configs:${FUNC_ENVCFG_VERSION}
+  package: xpkg.crossplane.io/crossplane-contrib/function-environment-configs:${FUNC_ENVCFG_VERSION}
 EOF
   log "Waiting for Function function-environment-configs to become Healthy (timeout ${WAIT_TIMEOUT})"
   wait_pkg_healthy function.pkg.crossplane.io function-environment-configs "${WAIT_TIMEOUT}"

@@ -172,7 +172,7 @@ check_network() {
   info "Checking network reachability (best-effort)..."
   local urls=(
     "https://charts.crossplane.io/stable/index.yaml"
-    "https://xpkg.upbound.io/"
+    "https://xpkg.crossplane.io/"
   )
   local any_tool=0
   for u in "${urls[@]}"; do

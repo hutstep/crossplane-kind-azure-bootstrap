@@ -1,6 +1,6 @@
 # Makefile for Crossplane + kind bootstrap convenience
 
-.PHONY: help bootstrap dry-run recreate skip-cluster tools-check
+.PHONY: help bootstrap dry-run recreate skip-cluster tools-check clean clean-force clean-delete-cluster
 
 SCRIPT := scripts/bootstrap-crossplane-kind.sh
 
@@ -21,6 +21,9 @@ help:
 	@echo "  make recreate         - Recreate the kind cluster then bootstrap"
 	@echo "  make skip-cluster     - Use current kube context; install Crossplane only"
 	@echo "  make tools-check      - Check required tools exist (no installs)"
+	@echo "  make clean            - Cleanup Crossplane providers/functions and Helm release (keeps cluster)"
+	@echo "  make clean-force      - Cleanup plus remove Function package CRDs (forces full cleanup; keeps cluster)"
+	@echo "  make clean-delete-cluster - Cleanup and delete the kind cluster (non-interactive)"
 	@echo ""
 	@echo "Variables (override as needed):"
 	@echo "  CROSSPLANE_VERSION, PROVIDER_AZURE_VERSION"
@@ -71,8 +74,17 @@ skip-cluster:
 	  --wait-timeout $(WAIT_TIMEOUT)
 
 tools-check:
-	@bash -c 'command -v kind >/dev/null || { echo "missing: kind"; exit 127; }'
-	@bash -c 'command -v kubectl >/dev/null || { echo "missing: kubectl"; exit 127; }'
-	@bash -c 'command -v helm >/dev/null || { echo "missing: helm"; exit 127; }'
+	@bash -c 'command -v kind > /dev/null || { echo "missing: kind"; exit 127; }'
+	@bash -c 'command -v kubectl > /dev/null || { echo "missing: kubectl"; exit 127; }'
+	@bash -c 'command -v helm > /dev/null || { echo "missing: helm"; exit 127; }'
 	@echo "All required tools present."
+
+clean:
+	@bash $(SCRIPT) --cleanup
+
+clean-force:
+	@bash $(SCRIPT) --cleanup --force-clean
+
+clean-delete-cluster:
+	@bash $(SCRIPT) --cleanup --delete-cluster --yes
 
