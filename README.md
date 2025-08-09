@@ -1,8 +1,11 @@
 # crossplane-kind-azure-bootstrap
 
+[![lint](https://github.com/hutstep/crossplane-kind-azure-bootstrap/actions/workflows/lint.yml/badge.svg)](https://github.com/hutstep/crossplane-kind-azure-bootstrap/actions/workflows/lint.yml) [![e2e-kind](https://github.com/hutstep/crossplane-kind-azure-bootstrap/actions/workflows/e2e.yml/badge.svg)](https://github.com/hutstep/crossplane-kind-azure-bootstrap/actions/workflows/e2e.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Bootstrap a local [kind](https://kind.sigs.k8s.io/) cluster with [Crossplane](https://crossplane.io/), the Crossplane provider family for Azure, and selected Composition Functions. Designed to be robust, idempotent, and non-interactive friendly for both local use and CI.
 
 ## Features
+
 - Creates or reuses a kind cluster (or targets current kubectl context)
 - Installs Crossplane via Helm chart (chart version controllable)
 - Installs provider family for Azure (provider-family-azure)
@@ -14,6 +17,7 @@ Bootstrap a local [kind](https://kind.sigs.k8s.io/) cluster with [Crossplane](ht
 - Makefile with common targets
 
 ## Prerequisites
+
 - Docker (required by kind)
 - kind ≥ 0.20.0
 - kubectl ≥ 1.25
@@ -22,9 +26,10 @@ Bootstrap a local [kind](https://kind.sigs.k8s.io/) cluster with [Crossplane](ht
   - https://charts.crossplane.io/stable/index.yaml
   - https://xpkg.crossplane.io/
 
-Tip: Ensure all scripts in scripts/ are executable so you can run them directly (chmod +x scripts/*).
+Tip: Ensure all scripts in scripts/ are executable so you can run them directly (chmod +x scripts/\*).
 
 ## Quick start
+
 - Non-interactive default install (creates kind cluster if missing):
   ```bash
   scripts/bootstrap-crossplane-kind.sh --yes
@@ -44,6 +49,7 @@ Tip: Ensure all scripts in scripts/ are executable so you can run them directly 
   ```
 
 ## Makefile targets
+
 - Bootstrap (idempotent):
   ```bash
   make bootstrap
@@ -78,23 +84,25 @@ Tip: Ensure all scripts in scripts/ are executable so you can run them directly 
   ```
 
 ## Script flags (most-used)
-- --yes                       Non-interactive assume-yes
-- --cluster-name NAME         Kind cluster name (default: crossplane-kind)
-- --kind-node-image IMAGE     Node image (default: kindest/node:v1.29.4 or newer)
-- --crossplane-version VER    Crossplane Helm chart version (e.g., v1.20.1)
-- --provider-azure-version V  provider-family-azure version (e.g., v1.13.0)
-- --func-pat-version V        function-patch-and-transform version (e.g., v0.9.0)
-- --func-envcfg-version V     function-environment-configs version (e.g., v0.4.0)
-- --skip-cluster              Target current kubectl context; do not create kind
-- --recreate                  Delete existing kind cluster with the same name first
-- --wait-timeout DURATION     e.g., 10m
-- --cleanup                   Remove providers/functions and Crossplane Helm release
-- --delete-cluster            With --cleanup, delete the kind cluster too
-- --force-clean               With --cleanup, also remove Function package CRDs
-- --dry-run                   Print planned actions only
-- --verbose                   Shell tracing (set -x)
+
+- --yes Non-interactive assume-yes
+- --cluster-name NAME Kind cluster name (default: crossplane-kind)
+- --kind-node-image IMAGE Node image (default: kindest/node:v1.29.4 or newer)
+- --crossplane-version VER Crossplane Helm chart version (e.g., v1.20.1)
+- --provider-azure-version V provider-family-azure version (e.g., v1.13.0)
+- --func-pat-version V function-patch-and-transform version (e.g., v0.9.0)
+- --func-envcfg-version V function-environment-configs version (e.g., v0.4.0)
+- --skip-cluster Target current kubectl context; do not create kind
+- --recreate Delete existing kind cluster with the same name first
+- --wait-timeout DURATION e.g., 10m
+- --cleanup Remove providers/functions and Crossplane Helm release
+- --delete-cluster With --cleanup, delete the kind cluster too
+- --force-clean With --cleanup, also remove Function package CRDs
+- --dry-run Print planned actions only
+- --verbose Shell tracing (set -x)
 
 ## What gets installed
+
 - Crossplane Helm chart from charts.crossplane.io (chart version you choose)
 - Provider family Azure package:
   - xpkg.crossplane.io/crossplane-contrib/provider-family-azure:v1.13.0
@@ -103,6 +111,7 @@ Tip: Ensure all scripts in scripts/ are executable so you can run them directly 
   - xpkg.crossplane.io/crossplane-contrib/function-environment-configs:v0.4.0
 
 ## Verify installation
+
 ```bash
 helm list -n crossplane-system
 kubectl get providers.pkg.crossplane.io -o wide
@@ -111,6 +120,7 @@ kubectl get pods -A
 ```
 
 ## Cleanup
+
 - Keep cluster, remove providers/functions and Crossplane Helm release:
   ```bash
   scripts/bootstrap-crossplane-kind.sh --cleanup
@@ -125,10 +135,12 @@ kubectl get pods -A
   ```
 
 ## CI notes
+
 - Ensure Docker-in-Docker or Docker is available on the runner (kind requires Docker).
 - Cache Helm repository data to speed up runs:
   - $HOME/.cache/helm
   - optionally $HOME/.config/helm/repositories.yaml
 
 ## License
+
 This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
